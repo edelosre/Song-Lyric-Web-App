@@ -4,6 +4,5 @@ flask
 flask_session
 werkzeug
 bs4
-collections
 string
 functools
