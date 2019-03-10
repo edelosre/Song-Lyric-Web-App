@@ -37,13 +37,7 @@ def index():
 @app.route("/getlyrics", methods=["GET"])
 def getlyrics():
 
-    MAX_RETRIES = 20
-
-    session = requests.Session()
-    adapter = requests.adapters.HTTPAdapter(max_retries=MAX_RETRIES)
-    session.mount('https://', adapter)
-    session.mount('http://', adapter)
-
+    
     # Query database for query
     query = request.args.get('query', None)
     if ' ' in query:
@@ -52,7 +46,8 @@ def getlyrics():
     else:
             song_url = 'https://search.azlyrics.com/search.php?q=' + query
 
-    response = session.get(song_url)
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36'}
+    response = requests.get(song_url, headers = headers)
 
     soup = BeautifulSoup(response.content, 'html.parser')
 
@@ -72,7 +67,7 @@ def getlyrics():
     else:
         print('Sorry, we could not find any results for that search. Please modify your search terms.' + '\n')
 
-    response2 = session.get(lyric_page)
+    response2 = requests.get(lyric_page, headers = headers)
 
     #Grab the element from page that contains song lyrics
     #Grab title for item that the search query returned
