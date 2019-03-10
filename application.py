@@ -25,6 +25,12 @@ def after_request(response):
 
 Session(app)
 
+proxyDict = {
+              "http"  : os.environ.get('FIXIE_URL', ''),
+              "https" : os.environ.get('FIXIE_URL', '')
+            }
+
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
@@ -66,8 +72,8 @@ def getlyrics():
         lyric_page = (without_albums[0].find('a').get('href'))
     else:
         print('Sorry, we could not find any results for that search. Please modify your search terms.' + '\n')
-
-    response2 = requests.get('https://www.azlyrics.com/lyrics/carlyraejepsen/ireallylikeyou.html', headers = headers)
+    
+    response2 = requests.get(lyric_page, headers = headers, proxies = ProxyDict)
 
     #Grab the element from page that contains song lyrics
     #Grab title for item that the search query returned
