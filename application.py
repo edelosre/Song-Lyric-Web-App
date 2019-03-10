@@ -73,7 +73,7 @@ def getlyrics():
     else:
         print('Sorry, we could not find any results for that search. Please modify your search terms.' + '\n')
     
-    response2 = requests.get(lyric_page, headers = headers, proxies = ProxyDict)
+    response2 = requests.get(lyric_page, headers = headers, proxies = proxyDict)
 
     #Grab the element from page that contains song lyrics
     #Grab title for item that the search query returned
