@@ -4,4 +4,3 @@ flask
 flask_session
 werkzeug
 bs4
-functools
