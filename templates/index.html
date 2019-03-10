@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+
+{% block title %} test {% endblock %}
+
+{% block main %}
+		<h1 class="mt-5">Song Lyrics</h1>
+		<p class="lead">Note: This search returns the top result. If the song you were looking for wasn't returned, try specifying the artist.</p>
+		<br></br>
+			<form action="/" method="post">
+				<div class="form-group">
+					<input autocomplete="off" autofocus class="form-control" name="songlyrics" placeholder="Enter in song" type="text">
+				</div>
+				<button class="btn btn-primary" type="submit">Find Song Lyrics</button>
+			</form>
+{% endblock %}

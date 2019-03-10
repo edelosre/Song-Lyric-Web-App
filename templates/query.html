@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+
+{% block title %} test {% endblock %}
+
+{% block main %}
+		<h1 class="mt-5">{{songtitle}}</h1>
+		<h5> by {{artist}} </h6>
+		{%for line in lyric_list %}
+			{{line}}
+			<br></br>
+		{% endfor %}
+{% endblock %}
