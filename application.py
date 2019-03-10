@@ -25,10 +25,10 @@ def after_request(response):
 
 Session(app)
 
-proxyDict = {
-              "http"  : os.environ.get('FIXIE_URL', ''),
-              "https" : os.environ.get('FIXIE_URL', '')
-            }
+proxies = {
+"http": os.environ['QUOTAGUARDSTATIC_URL'],
+"https": os.environ['QUOTAGUARDSTATIC_URL']
+}
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -73,7 +73,7 @@ def getlyrics():
     else:
         print('Sorry, we could not find any results for that search. Please modify your search terms.' + '\n')
     
-    response2 = requests.get(lyric_page, headers = headers, proxies = proxyDict)
+    response2 = requests.get(lyric_page, headers = headers, proxies = proxies)
 
     #Grab the element from page that contains song lyrics
     #Grab title for item that the search query returned
