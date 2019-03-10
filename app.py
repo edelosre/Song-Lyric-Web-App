@@ -1,13 +1,16 @@
-import os
 import requests
+import io
+import random
 
-from flask import Flask, flash, jsonify, redirect, url_for, render_template, request, session
+from matplotlib.figure import Figure
+from wordcloud import WordCloud
+from flask import Flask, redirect, url_for, render_template, request, Response
 from flask_session import Session
 from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
-from helpers import apology
+from helpers import apology, remove_punctuation
 from bs4 import BeautifulSoup
-
+from collections import Counter
 
 # Configure application
 app = Flask(__name__)
@@ -23,36 +26,7 @@ def after_request(response):
     response.headers["Pragma"] = "no-cache"
     return response
 
-
-# Configure session to use filesystem (instead of signed cookies)
-app.config["SESSION_FILE_DIR"] = mkdtemp()
-app.config["SESSION_PERMANENT"] = False
-app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
-
-
-@app.route("/simple_chart")
-def chart():
-    labels = [
-        'JAN', 'FEB', 'MAR', 'APR',
-        'MAY', 'JUN', 'JUL', 'AUG',
-        'SEP', 'OCT', 'NOV', 'DEC'
-    ]
-
-    values = [
-        967.67, 1190.89, 1079.75, 1349.19,
-        2328.91, 2504.28, 2873.83, 4764.87,
-        4349.29, 6458.30, 9907, 16297
-    ]
-
-    colors = [
-        "#F7464A", "#46BFBD", "#FDB45C", "#FEDCBA",
-        "#ABCDEF", "#DDDDDD", "#ABCABC", "#4169E1",
-        "#C71585", "#FF4500", "#FEDCBA", "#46BFBD"]
-
-    bar_labels=labels
-    bar_values=values
-    return render_template('chart.html', title='Word Chart', max=17000, labels=bar_labels, values=bar_values)
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -73,18 +47,15 @@ def getlyrics():
     else:
             song_url = 'https://search.azlyrics.com/search.php?q=' + query
 
-
     response = requests.get(song_url)
 
     soup = BeautifulSoup(response.content, 'html.parser')
-
 
     #With albums
     with_albums = soup.find_all('div', attrs= 'panel')
 
     #Without albums
     without_albums = soup.find_all('td', attrs = {'class' : 'text-left visitedlyr'})
-
 
     #If album panel is also shown, select the song panel instead
     if len(with_albums) > 2:
@@ -106,14 +77,38 @@ def getlyrics():
     for line in lyrics.split("\n"):
         lyric_list.append(line)
     songmetadata = str(soup2.find('title').getText()).split(' -')
-    print(songmetadata)
     artist = songmetadata[0]
     songtitle = songmetadata[1].split(" |")[0].replace(" Lyrics", "").strip()
-    print(songtitle)
-    print(artist)
-    print("Returned lyrics for %s by %s" % (songtitle, artist))
 
-    return render_template("query.html", artist = artist, songtitle = songtitle, lyric_list = lyric_list)
+    word_count = Counter()
+
+    for line in lyric_list:
+        for word in line.split():
+            word = word.lower()
+            word = remove_punctuation(word)
+            word_count[word] += 1
+
+    words = word_count.most_common(12)
+
+    labels = []
+    values = []
+    for i in range(len(words)):
+        labels.append(words[i][0])
+        values.append(words[i][1])
+
+    wordcloud_text = ' '.join(map(str, lyric_list)).strip().lower()
+    for word in wordcloud_text.split():
+        word = remove_punctuation(word)
+        
+    return render_template("query.html", artist = artist, songtitle = songtitle, lyric_list = lyric_list, max=values[0], labels=labels, values=values, wordcloud_text = wordcloud_text)
+
+@app.route('/image/<wordcloud_text>/plot.png')
+def wordcloud(wordcloud_text):
+    wordcloud = WordCloud(stopwords = " ", collocations = False).generate(wordcloud_text)
+    img = io.BytesIO()
+    wordcloud.to_image().save(img, 'PNG')
+    img.seek(0)
+    return Response(img.getvalue(), mimetype='image/png')
 
 def errorhandler(e):
     """Handle error"""
