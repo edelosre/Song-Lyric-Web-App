@@ -13,7 +13,8 @@
 								<canvas width="600" height="300" id="mychart"></canvas>
 						</div>
 						<div>
-								<img src="{{url_for('wordcloud', wordcloud_text = wordcloud_text)}}" alt="WordCloud" height="300">
+								<!-- DOES NOT WORK ON HEROKU, NEED S3 DUE TO EPHEMERAL FILE STORAGE
+                  <img src="{{url_for('wordcloud', wordcloud_text = wordcloud_text)}}" alt="WordCloud" height="300"> -->
 						</div>
 				</center>
 			</div>
