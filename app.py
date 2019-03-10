@@ -1,12 +1,9 @@
 import requests
 import io
-import random
 
-from matplotlib.figure import Figure
 from wordcloud import WordCloud
 from flask import Flask, redirect, url_for, render_template, request, Response
 from flask_session import Session
-from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from helpers import apology, remove_punctuation
 from bs4 import BeautifulSoup
@@ -99,7 +96,7 @@ def getlyrics():
     wordcloud_text = ' '.join(map(str, lyric_list)).strip().lower()
     for word in wordcloud_text.split():
         word = remove_punctuation(word)
-        
+
     return render_template("query.html", artist = artist, songtitle = songtitle, lyric_list = lyric_list, max=values[0], labels=labels, values=values, wordcloud_text = wordcloud_text)
 
 @app.route('/image/<wordcloud_text>/plot.png')
