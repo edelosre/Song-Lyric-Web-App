@@ -1,6 +1,6 @@
 import requests
 import io
-import os
+
 from wordcloud import WordCloud
 from flask import Flask, redirect, url_for, render_template, request, Response
 from flask_session import Session
@@ -24,12 +24,6 @@ def after_request(response):
     return response
 
 Session(app)
-
-proxyDict = {
-              "http"  : os.environ.get('FIXIE_URL', ''),
-              "https" : os.environ.get('FIXIE_URL', '')
-            }
-
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -72,8 +66,8 @@ def getlyrics():
         lyric_page = (without_albums[0].find('a').get('href'))
     else:
         print('Sorry, we could not find any results for that search. Please modify your search terms.' + '\n')
-    
-    response2 = requests.get(lyric_page, headers = headers, proxies = ProxyDict)
+
+    response2 = requests.get(lyric_page, headers = headers)
 
     #Grab the element from page that contains song lyrics
     #Grab title for item that the search query returned
