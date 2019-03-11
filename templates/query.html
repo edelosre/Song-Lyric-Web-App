@@ -5,10 +5,10 @@
 {% block main %}
 		<h1 class="mt-5">{{songtitle}}</h1>
 		<h5> by {{artist}} </h6>
-      <br></br>
-      <center>
+			<br></br>
 			<button onclick="ToggleGraph()" type="button" class="btn btn-success">Toggle Histogram & WordCloud</button>
 			<div id = "graphdivtoggle">
+				<center>
 						<div class="chart-container" style="position: relative; height:40vh; width:80vw"></div>>
 								<canvas id="mychart"></canvas>
 						</div>
@@ -16,8 +16,8 @@
 								<!-- DOES NOT WORK ON HEROKU, NEED S3 DUE TO EPHEMERAL FILE STORAGE
                   <img src="{{url_for('wordcloud', wordcloud_text = wordcloud_text)}}" alt="WordCloud" height="300"> -->
 						</div>
-      </div>
-    </center>
+				</center>
+			</div>
 		{%for line in lyric_list %}
 			{{line}}
 			<br></br>
