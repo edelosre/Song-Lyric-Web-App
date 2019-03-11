@@ -2,6 +2,7 @@ import requests
 import io
 import os
 from wordcloud import WordCloud
+from requests.packages.urllib3.util.retry import Retry
 from flask import Flask, redirect, url_for, render_template, request, Response
 from flask_session import Session
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
@@ -25,12 +26,14 @@ def after_request(response):
 
 Session(app)
 
+#Website blocks connection when hosted on Heroku
+# Proxies not needed when running locally 
 proxies = {
 "http": os.environ['QUOTAGUARDSTATIC_URL'],
 "https": os.environ['QUOTAGUARDSTATIC_URL']
 }
 
-
+request_handler = requests.Session()
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -44,7 +47,8 @@ def index():
 @app.route("/getlyrics", methods=["GET"])
 def getlyrics():
 
-    
+    session = requests_retry(retries = 5, backoff_factor = 0.5)
+
     # Query database for query
     query = request.args.get('query', None)
     if ' ' in query:
@@ -53,15 +57,14 @@ def getlyrics():
     else:
             song_url = 'https://search.azlyrics.com/search.php?q=' + query
 
+    #Mimic user headers, so website doesn't immediately reject connection
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36'}
-    response = requests.get(song_url, headers = headers)
+    response = session.get(song_url, headers = headers)
 
     soup = BeautifulSoup(response.content, 'html.parser')
 
-    #With albums
+    #Element selection changes based on whether or not albums appear in search results
     with_albums = soup.find_all('div', attrs= 'panel')
-
-    #Without albums
     without_albums = soup.find_all('td', attrs = {'class' : 'text-left visitedlyr'})
 
     #If album panel is also shown, select the song panel instead
@@ -74,7 +77,7 @@ def getlyrics():
     else:
         print('Sorry, we could not find any results for that search. Please modify your search terms.' + '\n')
     
-    response2 = requests.get(lyric_page, headers = headers, proxies = proxies)
+    response2 = session.get(lyric_page, headers = headers, proxies = proxies)
 
     #Grab the element from page that contains song lyrics
     #Grab title for item that the search query returned
@@ -109,6 +112,9 @@ def getlyrics():
 
     return render_template("query.html", artist = artist, songtitle = songtitle, lyric_list = lyric_list, max=values[0], labels=labels, values=values, wordcloud_text = wordcloud_text)
 
+#Add listener to generate wordcloud image dynamically in memory
+#Does not work on Heroku due to ephemeral file system
+#ToDo: Integrate AWS S3 file system in order to save file
 @app.route('/image/<wordcloud_text>/plot.png')
 def wordcloud(wordcloud_text):
     wordcloud = WordCloud(stopwords = " ", collocations = False).generate(wordcloud_text)
@@ -117,13 +123,23 @@ def wordcloud(wordcloud_text):
     img.seek(0)
     return Response(img.getvalue(), mimetype='image/png')
 
+#Added to prevent occasional connection refusal, and lessen request workload
+def requests_retry(retries, backoff_factor):
+    session = requests.Session()
+    retry = Retry(connect=retries, backoff_factor=backoff_factor)
+    adapter = requests.adapters.HTTPAdapter(max_retries= retry)
+    session.mount('http://', adapter)
+    session.mount('https://', adapter)
+
+    return session
+
 def errorhandler(e):
     """Handle error"""
     if not isinstance(e, HTTPException):
         e = InternalServerError()
     return apology(e.name, e.code)
 
-
 # Listen for errors
 for code in default_exceptions:
     app.errorhandler(code)(errorhandler)
+
