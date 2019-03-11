@@ -9,8 +9,8 @@
 			<button onclick="ToggleGraph()" type="button" class="btn btn-success">Toggle Histogram & WordCloud</button>
 			<div id = "graphdivtoggle">
 				<center>
-						<div>
-								<canvas width="600" height="300" id="mychart"></canvas>
+						<div class="chart-container" style="position: relative; height:40vh; width:80vw"></div>>
+								<canvas id="mychart"></canvas>
 						</div>
 						<div>
 								<!-- DOES NOT WORK ON HEROKU, NEED S3 DUE TO EPHEMERAL FILE STORAGE
