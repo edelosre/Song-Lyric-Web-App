@@ -29,8 +29,8 @@ Session(app)
 #Website blocks connection when hosted on Heroku
 # Proxies not needed when running locally 
 proxies = {
-"http": os.environ['QUOTAGUARDSTATIC_URL'],
-"https": os.environ['QUOTAGUARDSTATIC_URL']
+"http": os.environ['FIXIE_URL', ''],
+"https": os.environ['FIXIE_URL', '']
 }
 
 request_handler = requests.Session()
